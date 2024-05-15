@@ -36,15 +36,15 @@ type Props = {
 
 export default async function Lyrics(props: Props){
 	const params = props.params
-	const lyrics = (await getLyrics(decodeURIComponent(params.song), decodeURIComponent(params.artist))).lyrics
+	const song: string = decodeURIComponent(params.song)
+	const artist: string = decodeURIComponent(params.artist)
+	const data = await getLyrics(song, artist)
+	const lyrics = data.lyrics
+	const highlights = data.highlights
+
 	return (
 		<div className="window-wrapper">
-			<Highlights songName={params.song} artist={params.artist} />
-			{lyrics.map((line: string, index: number) => (
-				<h1 className="p-4 text-xl" key={index}>
-					{line}
-				</h1>
-			))}
+			<Highlights songName={params.song} artist={params.artist} songId={data.song_id} lyrics={lyrics} />
 		</div>
 	)
 }

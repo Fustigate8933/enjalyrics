@@ -1,25 +1,44 @@
 "use client"
 import TranslationPopup from "./TranslationPopup"
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 
 interface HighlightsProps {
 	songName: string,
-	artist: string
+	artist: string,
+	songId: number,
+	lyrics: string[]
 }
 
-const Highlights: React.FC<HighlightsProps> = ({ songName, artist }) => {
+interface HighlightObject {
+	song_id: number;
+	highlighted_text: string;
+	x_pos: number;
+	start: number;
+	id: number;
+	translation: string;
+	y_pos: number;
+	end: number;
+}
+
+interface HighlightsState {
+	[lineNumber: number]: HighlightObject[];
+}
+
+const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyrics }) => {
+	const [canChangeLines, setCanChangeLines] = useState(true)
+	const [startnode, setStartnode] = useState(0)
+
 	const [highlighted, setHighlighted] = useState({
+		id: -1,
 		text: "",
 		translation: "",
 		position: { x: 0, y: 0 },
+		start: 0,
+		end: 0,
+		line: 0
 	})
 
-	const [highlights, setHighlights] = useState<{ id: number, text: string, translation: string }[]>([])
-	const [translationPopup, setTranslationPopup] = useState({
-		visible: false,
-		text: "",
-		position: { x: 0, y: 0 },
-	});
+	const [highlights, setHighlights] = useState<HighlightsState>({})
 
 	const handleTranslationChange = (translation: string) => {
 		setHighlighted((prevState) => ({
@@ -28,11 +47,22 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist }) => {
 		}))
 	}
 
+	const handleLineHover = (e: React.MouseEvent<HTMLHeadingElement>) => {
+		if (canChangeLines){
+			const lineId = parseInt(e.currentTarget.id, 10)
+			setHighlighted((prevState) => ({
+				...prevState,
+				line: lineId
+			}))
+		}
+	}
+
 	const fetchHighlights = async () => {
 		try {
-			const response = await fetch(`http://127.0.0.1:8000/highlights/${songName}/${artist}`);
+			const response = await fetch(`http://127.0.0.1:8000/get-highlights/${songId}`);
 			const data = await response.json();
-			setHighlights(data);
+			setHighlights(data.highlights);
+			console.log(data.highlights)
 		} catch (error) {
 			console.error("Error fetching highlights:", error);
 		}
@@ -40,103 +70,119 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist }) => {
 
 	const handleSubmitTranslation = async (text: string, translation: string) => {
 		try {
-			const payload = {
-				highlighted_text: text, 
-				translation: translation, 
-				x_pos: highlighted.position.x, 
-				y_pos: highlighted.position.y, 
-				song_name: songName, 
-				artist: artist 
-			}
-			console.log(JSON.stringify(payload))
-			const response = await fetch("http://127.0.0.1:8000/highlights", {
+			// console.log(`Line: ${highlighted.line}`)
+			const response = await fetch("http://127.0.0.1:8000/add-highlight", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload),
-			});
-    if (response.ok) {
-      console.log("Translation submitted successfully");
-      await fetchHighlights();
-    } else {
-      console.error("Failed to submit translation");
-    }
+				body: JSON.stringify({
+					song_id: songId,
+					highlighted_text: text, 
+					translation: translation, 
+					x_pos: highlighted.position.x, 
+					y_pos: highlighted.position.y,
+					start: highlighted.start,
+					end: highlighted.end,
+					line: highlighted.line
+				}),
+			})
+			const data = await response.json()
+			// console.log(data)
+			if (response.ok) {
+				console.log("Translation submitted successfully");
+				await fetchHighlights();
+			} else {
+				console.error("Failed to submit translation");
+			}
 		} catch (error) {
 			console.error("Error submitting translation:", error);
 		}
 	}
 
+	const handleDeleteTranslation = (id: number) => {
+		console.log(id)
+	}
+
+	const handleSelectionChange = (endnode: number) => {
+		setCanChangeLines(false)
+
+		const selection = window.getSelection()
+		const selectedText = selection?.toString()
+
+		const range = selection?.getRangeAt(0);
+		const rect = range?.getBoundingClientRect()
+
+		if (selectedText){
+			setHighlighted((prevState) => ({
+				...prevState,
+				position: { x: Math.floor(rect.x), y: Math.floor(rect.y) },
+				start: startnode,
+				end: endnode,
+				text: selectedText,
+				translation: ""
+			}))
+		}else{
+			setHighlighted((prevState) => ({
+				...prevState,
+				text: ""
+			}))
+			setCanChangeLines(true)
+		}
+	}
+
 	useEffect(() => {
-		const handleSelectionChange = () => {
-			const selection = window.getSelection();
-			if (selection !== null){
-				console.log("Selection changed")
-				const selectedText = selection.toString();
-				const range = selection.getRangeAt(0);
-				const rect = range.getBoundingClientRect();
-				setHighlighted({
-					text: selectedText,
-					translation: "",
-					position: { x: Math.floor(rect.x), y: Math.floor(rect.y) },
-				});
-			}
-		}
+		fetchHighlights();
+	}, []);
 
-		document.addEventListener("mouseup", handleSelectionChange)
-
-		return () => {
-			document.removeEventListener("mouseup", handleSelectionChange)
-		}
-		}, [])
 
 	return (
-		<div>
-			hi
-			{highlights.map((highlight) => (
-				<span
-					key={highlight.id}
-					onMouseOver={(e) => {
-						// Show the translation popup when hovering over the highlighted text
-						setTranslationPopup({
-							visible: true,
-							text: highlight.translation,
-							position: {
-								x: e.currentTarget.offsetLeft,
-								y: e.currentTarget.offsetTop - 50,
-							},
-						});
-					}}
-					onMouseLeave={() => {
-						// Hide the translation popup when mouse leaves the highlighted text
-						setTranslationPopup({ visible: false, text: "", position: { x: 0, y: 0 } });
-					}}
-				>
-					{highlight.text}{" "}
-				</span>
+		<div className="pl-[100px]">
+			<h1 className="p-4 text-3xl underline">{decodeURIComponent(songName)}</h1>
+			<h1 className="p-4 text-xl">{decodeURIComponent(artist)}</h1>
+			{lyrics.map((lyric: string, index: number) => (
+				<h1 className="p-4 text-2xl" key={index} id={`${index}`} onMouseOver={handleLineHover}>
+					{lyric.split("").map((char, charIndex) => {
+						const lineHighlights = highlights[index] || []
+						const highlight = lineHighlights.find(
+							(h) => charIndex >= h.start && charIndex <= h.end
+						)
+						return highlight ? (
+							<span
+								key={charIndex}
+								className={`text-green-300 ${charIndex}`}
+								onClick={() => {
+									setHighlighted({
+										id: highlight.id,
+										text: highlight.translation,
+										translation: highlight.translation,
+										position: { x: highlight.x_pos, y: highlight.y_pos },
+										start: highlight.start,
+										end: highlight.end,
+										line: index,
+									})
+								}}
+								onMouseUp={() => handleSelectionChange(charIndex)}
+								onMouseDown={() => {setStartnode(charIndex)}}
+								>
+								{char}
+							</span>
+							) : (
+								<span key={charIndex} className={`${charIndex}`} onMouseUp={() => handleSelectionChange(charIndex)} onMouseDown={() => setStartnode(charIndex)}>{char}</span>
+						);
+					})}
+				</h1>
 			))}
 
-			{translationPopup.visible && (
-				<div
-					style={{
-						position: "absolute",
-						left: translationPopup.position.x,
-						top: translationPopup.position.y,
-						backgroundColor: "white",
-						border: "1px solid black",
-						padding: "5px",
-					}}
-				>
-					{translationPopup.text}
-				</div>
-			)}
-
 			{highlighted.text && (
-        <TranslationPopup
-          text={highlighted.text}
-          position={highlighted.position}
-          onTranslationChange={handleTranslationChange}
+				<TranslationPopup
+					text={highlighted.translation}
+					position={highlighted.position}
+					onTranslationChange={handleTranslationChange}
 					onSubmitTranslation={handleSubmitTranslation}
-        />
-      )}
+					onDeleteTranslation={handleDeleteTranslation}
+					lineId={highlighted.line}
+					id={highlighted.id}
+				/>
+			)}
 		</div>
 	)
 }

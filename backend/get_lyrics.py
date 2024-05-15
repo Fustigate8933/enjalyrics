@@ -17,4 +17,3 @@ def get_lyrics(song, artist):
 if __name__ == "__main__":
     print(type(get_lyrics("インソムニア", "Eve")))
 
-

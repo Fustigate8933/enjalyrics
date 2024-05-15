@@ -24,6 +24,9 @@ class Highlight(Base):
     translation = Column(String)
     x_pos = Column(Integer)
     y_pos = Column(Integer)
+    start = Column(Integer)
+    end = Column(Integer)
+    line = Column(Integer)
 
     song = relationship("Song", back_populates="highlights")
 

@@ -1,19 +1,25 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 
 interface TranslationPopupProps {
 	text: string,
 	position: { x: number, y: number },
 	onTranslationChange: (translation: string) => void,
-	onSubmitTranslation: (text:string, translation: string) => void
+	onSubmitTranslation: (text:string, translation: string) => void,
+	onDeleteTranslation: (id: number) => void,
+	lineId: number,
+	id: number,
 }
 
 const TranslationPopup: React.FC<TranslationPopupProps> = ({
 	text,
 	position,
 	onTranslationChange,
-	onSubmitTranslation
+	onSubmitTranslation,
+	onDeleteTranslation,
+	lineId,
+	id
 }) => {
-	const [translation, setTranslation] = useState("")
+	const [translation, setTranslation] = useState(text)
 	const [popupWidth, setPopupWidth] = useState(0)
 	
 	const handleTranslationChange =	(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +33,10 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 
 	const handlePopupWidthChange = (width: number) => {
 		setPopupWidth(width)
+	}
+
+	const handleDeleteTranslation = () => {
+		onDeleteTranslation(id)
 	}
 
 	const centerX = position.x - popupWidth / 2
@@ -47,18 +57,24 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 			}}
 			id="translation-popup"
 			>
-			<p>{text}</p>
+			<p>{translation}</p>
 			<div className="flex gap-2 mt-1">
 				<input
 					type="text"
-					className="text-black p-1 rounded-md"
+					className="text-black p-1 rounded-md min-w-20"
 					value={translation}
 					onChange={handleTranslationChange}
 					placeholder="Enter translation"
+					id="translation-input"
 				/>
-				<button className="hover:cursor-pointer bg-white text-black rounded-lg px-2" onClick={handleSubmitTranslation}>
+				<button className="hover:cursor-pointer bg-green-300 text-black rounded-lg px-2" onClick={handleSubmitTranslation}>
 					Submit
 				</button>
+				{translation !== "" ? (
+					<button className="hover:cursor-pointer bg-red-400 text-black rounded-lg px-2" onClick={handleDeleteTranslation}>
+						Delete
+					</button>
+				) : null}
 			</div>
 		</div>
 	)
