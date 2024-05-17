@@ -6,8 +6,9 @@ interface TranslationPopupProps {
 	onTranslationChange: (translation: string) => void,
 	onSubmitTranslation: (text:string, translation: string) => void,
 	onDeleteTranslation: (id: number) => void,
-	lineId: number,
 	id: number,
+	already_in: boolean,
+	jp: string
 }
 
 const TranslationPopup: React.FC<TranslationPopupProps> = ({
@@ -16,11 +17,11 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 	onTranslationChange,
 	onSubmitTranslation,
 	onDeleteTranslation,
-	lineId,
-	id
+	id,
+	already_in,
+	jp
 }) => {
 	const [translation, setTranslation] = useState(text)
-	const [popupWidth, setPopupWidth] = useState(0)
 	
 	const handleTranslationChange =	(e: React.ChangeEvent<HTMLInputElement>) => {
 		setTranslation(e.target.value)
@@ -31,29 +32,17 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 		onSubmitTranslation(text, translation)
 	}
 
-	const handlePopupWidthChange = (width: number) => {
-		setPopupWidth(width)
-	}
-
 	const handleDeleteTranslation = () => {
 		onDeleteTranslation(id)
 	}
-
-	const centerX = position.x - popupWidth / 2
 
 	return (
 		<div
 			className="bg-black border border-black border-solid p-2 rounded-lg" 
 			style={{
 				position: "absolute",
-        left: centerX,
-        top: position.y - 80
-			}}
-			onLoad={() => {
-				const popupElement = document.getElementById("translation-popup")
-				if (popupElement){
-					handlePopupWidthChange(popupElement.offsetWidth)
-				}
+        left: position.x,
+        top: position.y - 80 + (window.scrollY)
 			}}
 			id="translation-popup"
 			>
@@ -64,13 +53,13 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 					className="text-black p-1 rounded-md min-w-20"
 					value={translation}
 					onChange={handleTranslationChange}
-					placeholder="Enter translation"
+					placeholder={jp}
 					id="translation-input"
 				/>
 				<button className="hover:cursor-pointer bg-green-300 text-black rounded-lg px-2" onClick={handleSubmitTranslation}>
 					Submit
 				</button>
-				{translation !== "" ? (
+				{already_in ? (
 					<button className="hover:cursor-pointer bg-red-400 text-black rounded-lg px-2" onClick={handleDeleteTranslation}>
 						Delete
 					</button>

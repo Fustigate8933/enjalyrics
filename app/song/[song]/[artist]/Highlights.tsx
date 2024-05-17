@@ -35,7 +35,8 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 		position: { x: 0, y: 0 },
 		start: 0,
 		end: 0,
-		line: 0
+		line: 0,
+		already_in: false
 	})
 
 	const [highlights, setHighlights] = useState<HighlightsState>({})
@@ -98,8 +99,24 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 		}
 	}
 
-	const handleDeleteTranslation = (id: number) => {
-		console.log(id)
+	const handleDeleteTranslation = async (id: number) => {
+		try {
+      const response = await fetch(`http://127.0.0.1:8000/delete-highlight/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log('Student deleted successfully');
+				await fetchHighlights();
+      } else {
+        console.error('Error deleting student:', response.status);
+      }
+    } catch (error) {
+      console.error('Error deleting student:', error);
+    }
 	}
 
 	const handleSelectionChange = (endnode: number) => {
@@ -120,6 +137,7 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 				text: selectedText,
 				translation: ""
 			}))
+			console.log(Math.floor(rect.x), Math.floor(rect.y))
 		}else{
 			setHighlighted((prevState) => ({
 				...prevState,
@@ -148,7 +166,7 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 						return highlight ? (
 							<span
 								key={charIndex}
-								className={`text-green-300 ${charIndex}`}
+								className={`text-green-300 ${charIndex} hover:cursor-pointer`}
 								onClick={() => {
 									setHighlighted({
 										id: highlight.id,
@@ -158,6 +176,7 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 										start: highlight.start,
 										end: highlight.end,
 										line: index,
+										already_in: true
 									})
 								}}
 								onMouseUp={() => handleSelectionChange(charIndex)}
@@ -175,12 +194,13 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 			{highlighted.text && (
 				<TranslationPopup
 					text={highlighted.translation}
+					jp={highlighted.text}
 					position={highlighted.position}
 					onTranslationChange={handleTranslationChange}
 					onSubmitTranslation={handleSubmitTranslation}
 					onDeleteTranslation={handleDeleteTranslation}
-					lineId={highlighted.line}
 					id={highlighted.id}
+					already_in={highlighted.already_in}
 				/>
 			)}
 		</div>

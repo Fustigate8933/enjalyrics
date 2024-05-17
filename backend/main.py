@@ -164,5 +164,21 @@ async def get_highlights(song_id: int):
 
     return {"song_id": song_id, "highlights": highlights_by_line}
 
+
+#### Delete a highlight of a song from database ####
+@app.delete("/delete-highlight/{highlight_id}")
+async def delete_highlight(highlight_id: int):
+    highlight = session.query(Highlight).filter_by(id=highlight_id).first()
+    if not highlight:
+        raise HTTPException(status_code=404, detail=f"Highlight with id {highlight_id} not found.")
+    session.delete(highlight)
+    session.commit()
+    return {"message": "Highlight deleted successfully"}
+
+
+
+
+
+
 print("-" * 20)
 
