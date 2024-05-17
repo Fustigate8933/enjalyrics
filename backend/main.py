@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from get_lyrics import get_lyrics
+from get_lyrics import get_song
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from models import *
@@ -38,58 +38,67 @@ print(f"Tables in the database found: {inspector.get_table_names()}")
 
 #### Function to fetch song from Genius ####
 def fetch_lyrics(song: str, artist: str):
-    lyrics = get_lyrics(song, artist)
+    song_data = get_song(song, artist)
 
-    if lyrics is None:
-        return None
+    if song_data is None:
+        return -1, ""
 
-    return lyrics
+    return song_data.id, song_data.lyrics
 
 def lyrics_to_list(lyrics):
     return list(filter(None, lyrics.split("\n")))[1:]
 
 
+#### Get all songs ####
+@app.get("/get-all-songs/")
+async def get_all_songs():
+    songs = session.query(Song).all()
+    return songs
+
 
 #### Add song to database ####
-class SongDetails(BaseModel):
+class AddSongDetails(BaseModel):
     song_name: str
     artist: str
+    id: int | None
 
 
 @app.post("/add-song/")
-async def add_song(params: SongDetails):
-    existing_song = session.query(Song).filter_by(song_name=params.song_name, artist=params.artist).first()
-    
-    if existing_song:
-        highlights_by_line = defaultdict(list)
-        for highlight in existing_song.highlights:
-            highlights_by_line[highlight.line].append({
-                "song_id": highlight.song_id,
-                "highlighted_text": highlight.highlighted_text,
-                "x_pos": highlight.x_pos,
-                "start": highlight.start,
-                "id": highlight.id,
-                "translation": highlight.translation,
-                "y_pos": highlight.y_pos,
-                "end": highlight.end
-            })
+async def add_song(params: AddSongDetails):
+    if id is not None:
+        existing_song = session.query(Song).filter_by(id=params.id).first()
+        
+        if existing_song:
+            highlights_by_line = defaultdict(list)
+            for highlight in existing_song.highlights:
+                highlights_by_line[highlight.line].append({
+                    "song_id": highlight.song_id,
+                    "highlighted_text": highlight.highlighted_text,
+                    "x_pos": highlight.x_pos,
+                    "start": highlight.start,
+                    "id": highlight.id,
+                    "translation": highlight.translation,
+                    "y_pos": highlight.y_pos,
+                    "end": highlight.end
+                })
 
-        response_content = {
-            "message": "Song already exists in database", 
-            "lyrics": lyrics_to_list(existing_song.lyrics), 
-            "song_id": existing_song.id,
-            "highlights": highlights_by_line
-        }
-        return response_content
+            response_content = {
+                "message": "Song already exists in database", 
+                "lyrics": lyrics_to_list(existing_song.lyrics), 
+                "id": existing_song.id,
+                "highlights": highlights_by_line
+            }
+            return response_content
 
-    lyrics = fetch_lyrics(params.song_name, params.artist)
-    if lyrics is None:
+    song_id, lyrics = fetch_lyrics(params.song_name, params.artist)
+    if song_id == -1:
         raise HTTPException(status_code=400, detail="Song couldn't be found")
 
     new_song = Song(
         song_name=params.song_name,
         artist=params.artist,
-        lyrics=lyrics
+        lyrics=lyrics,
+        id=song_id
     )
 
     session.add(new_song)
@@ -98,7 +107,7 @@ async def add_song(params: SongDetails):
     response_content = {
         "message": "Song added successfully", 
         "lyrics": lyrics_to_list(lyrics), 
-        "song_id": new_song.id,
+        "id": new_song.id,
         "highlights": {}
     }
 

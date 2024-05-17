@@ -1,13 +1,22 @@
-const Home = () => {
-	
+import HomePage from "./HomePage"
 
+async function fetchSongs () {
+	try {
+			const response = await fetch("http://localhost:8000/get-all-songs")
+			const data = await response.json()
+			return data
+		} catch (error) {
+			console.log(error)
+			return null
+		}
+}
+
+
+const Home = async () => {
+	const songs = await fetchSongs()
 
 	return (
-    <main className="window-wrapper">
-			<h1 className="text-3xl mb-10">Learn Japanese Vocabulary with Song Lyrics</h1>
-
-			<h1 className="text-xl font-bold">Songs List</h1>
-    </main>
+		<HomePage songs={songs} />
   );
 
 }

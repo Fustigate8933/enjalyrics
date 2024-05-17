@@ -1,6 +1,6 @@
 import Highlights from "./Highlights"
 
-async function getLyrics(song: string, artist: string){
+async function getLyrics(song: string, artist: string, id: number){
 	const url = `http://localhost:8000/add-song/`
 	try {
 		const response = await fetch(url, {
@@ -10,7 +10,8 @@ async function getLyrics(song: string, artist: string){
 			},
 			body: JSON.stringify({
 				song_name: song,
-				artist: artist
+				artist: artist,
+				id: id
 			})
 		})
 
@@ -30,7 +31,8 @@ async function getLyrics(song: string, artist: string){
 type Props = {
 	params: {
 		song: string,
-		artist: string
+		artist: string,
+		id: number
 	}
 }
 
@@ -38,7 +40,7 @@ export default async function Lyrics(props: Props){
 	const params = props.params
 	const song: string = decodeURIComponent(params.song)
 	const artist: string = decodeURIComponent(params.artist)
-	const data = await getLyrics(song, artist)
+	const data = await getLyrics(song, artist, params.id)
 	const lyrics = data.lyrics
 
 	return (
@@ -47,3 +49,4 @@ export default async function Lyrics(props: Props){
 		</div>
 	)
 }
+
