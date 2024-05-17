@@ -7,7 +7,6 @@ def get_song(song, artist):
     load_dotenv("../.env")
     token = os.getenv("GENIUS_TOKEN")
     
-
     genius = Genius(token)
     song = genius.search_song(song, artist)
 
@@ -16,4 +15,7 @@ def get_song(song, artist):
 
     return song
 
+
+if __name__ == "__main__":
+    print(get_song("insomnia", "eve") is None)
 

@@ -1,6 +1,8 @@
 "use client"
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/router"
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import Spinner from "./Spinner"
 
 interface songDetails {
 	artist: string,
@@ -19,6 +21,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
 	const [songName, setSongName] = useState("")
 	const [songArtist, setSongArtist] = useState("")
+	const [isLoading, setIsLoading] = useState(false)
 
 	const router = useRouter()
 
@@ -32,9 +35,11 @@ const HomePage: React.FC<HomePageProps> = ({
 
 	const handleSubmit = async (e: React.MouseEvent) => {
 		e.preventDefault()
+
+		setIsLoading(true)
 		
 		try {
-			const response = await fetch("http://localhost:8000/add-song", {
+			const response = await fetch("http://localhost:8000/add-song/", {
 				method: "POST",
 				headers: {"Content-Type": "application/json"},
 				body: JSON.stringify({
@@ -46,7 +51,7 @@ const HomePage: React.FC<HomePageProps> = ({
 			const data = await response.json()
 			const href = data.id
 			
-			router.push(href)
+			router.push(`/song/${href}`)
 			if (response.ok){
 				console.log("Success, redirecting...")
 			}else{
@@ -54,13 +59,24 @@ const HomePage: React.FC<HomePageProps> = ({
 			}
 		}catch (error) {
 			console.error("Error submitting song request: ", error)
+		} finally{
+			setIsLoading(false)
 		}
 	}
 
 	return (
-    <main className="window-wrapper">
-			<h1 className="text-6xl mb-10">Learn Japanese Vocabulary with Song Lyrics</h1>
-			<div className="flex flex-col gap-5 mb-4">
+    <main className="window-wrapper flex flex-col gap-[5rem]">
+			{isLoading && 
+				<div 
+					className="z-[999] fixed top-0 left-0 w-full h-full bg-black/[.5] flex justify-center items-center"
+				>
+					<Spinner />
+				</div>}
+			<div className="flex flex-col">
+				<h1 className="text-6xl mb-10">Learn <span className="text-[#FDB0C0]">Japanese</span> Vocabulary with <span className="text-[#BBE3F0]">Song Lyrics</span></h1>
+				<h1 className="text-2xl"><span className="text-[#BBE3F0]">歌詞</span>で<span className="text-[#FDB0C0]">日本語</span>の単語を学ぼう</h1>
+			</div>
+			<div className="flex flex-col gap-5">
 				<div className="flex gap-2">
 					<h1 className="text-xl">Song name: </h1>
 					<input
@@ -83,16 +99,25 @@ const HomePage: React.FC<HomePageProps> = ({
 						id="artist-name-search"
 					/>
 				</div>
-				<button className="self-start hover:cursor-pointer bg-gray-300 text-black rounded-lg px-2" onClick={handleSubmit}>Search</button>
+				<button className="self-start hover:cursor-pointer hover:scale-110 text-white border rounded-lg py-2 px-3" onClick={handleSubmit}>Search</button>
 			</div>
 			<div>
-				<h1 className="text-5xl font-bold">Songs List</h1>
-				{songs.map(song => (
-					<div key={song.id} className="p-5 border-yellow-300 rounded-md m-3">
-						<h1 className="text-2xl">{song.song_name}</h1>
-						<h1 className="text-xl">{song.artist}</h1>
-					</div>
-				))}
+				<h1 className="text-4xl font-bold mb-5">Songs List</h1>
+				<button className="self-start hover:cursor-pointer hover:scale-110 text-white border rounded-lg py-2 px-3 mb-5" onClick={() => location.reload()}>Refresh list</button>
+				<div className="flex flex-col">
+					{songs.map(song => {
+						if (song.song_name !== "undefined"){
+							return (
+								<Link href={`/song/${song.id}`} key={song.id}>
+									<div className="self-start hover:scale-[99%] p-2 border-yellow-300 rounded-md hover:cursor-pointer">
+										<h1 className="text-2xl text-shadow">{song.song_name}</h1>
+										<h1 className="text-xl italic">{song.artist}</h1>
+									</div>
+								</Link>
+							)
+						}
+					})}
+				</div>
 			</div>
     </main>
 	)

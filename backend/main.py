@@ -56,43 +56,55 @@ async def get_all_songs():
     return songs
 
 
+#### Get song by id ####
+@app.get("/get-song/{song_id}")
+async def get_song_by_id(song_id: int):
+    song = session.query(Song).filter_by(id=song_id).first()
+    if not song:
+        raise HTTPException(status_code=404, detail=f"Song with id {id} not found.")
+    return {
+        "song_name": song.song_name,
+        "artist": song.artist,
+        "id": song_id,
+        "lyrics": lyrics_to_list(song.lyrics)
+    }
+
+
 #### Add song to database ####
 class AddSongDetails(BaseModel):
     song_name: str
     artist: str
-    id: int | None
 
 
 @app.post("/add-song/")
 async def add_song(params: AddSongDetails):
-    if id is not None:
-        existing_song = session.query(Song).filter_by(id=params.id).first()
-        
-        if existing_song:
-            highlights_by_line = defaultdict(list)
-            for highlight in existing_song.highlights:
-                highlights_by_line[highlight.line].append({
-                    "song_id": highlight.song_id,
-                    "highlighted_text": highlight.highlighted_text,
-                    "x_pos": highlight.x_pos,
-                    "start": highlight.start,
-                    "id": highlight.id,
-                    "translation": highlight.translation,
-                    "y_pos": highlight.y_pos,
-                    "end": highlight.end
-                })
-
-            response_content = {
-                "message": "Song already exists in database", 
-                "lyrics": lyrics_to_list(existing_song.lyrics), 
-                "id": existing_song.id,
-                "highlights": highlights_by_line
-            }
-            return response_content
-
     song_id, lyrics = fetch_lyrics(params.song_name, params.artist)
     if song_id == -1:
         raise HTTPException(status_code=400, detail="Song couldn't be found")
+
+    existing_song = session.query(Song).filter_by(id=song_id).first()
+    
+    if existing_song:
+        highlights_by_line = defaultdict(list)
+        for highlight in existing_song.highlights:
+            highlights_by_line[highlight.line].append({
+                "song_id": highlight.song_id,
+                "highlighted_text": highlight.highlighted_text,
+                "x_pos": highlight.x_pos,
+                "start": highlight.start,
+                "id": highlight.id,
+                "translation": highlight.translation,
+                "y_pos": highlight.y_pos,
+                "end": highlight.end
+            })
+
+        response_content = {
+            "message": "Song already exists in database", 
+            "lyrics": lyrics_to_list(existing_song.lyrics), 
+            "id": existing_song.id,
+            "highlights": highlights_by_line
+        }
+        return response_content
 
     new_song = Song(
         song_name=params.song_name,

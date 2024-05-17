@@ -1,6 +1,6 @@
 "use client"
 import TranslationPopup from "./TranslationPopup"
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect } from "react"
 
 interface HighlightsProps {
 	songName: string,
@@ -148,7 +148,8 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 	}
 
 	useEffect(() => {
-		fetchHighlights();
+		fetchHighlights()
+		console.log(lyrics)
 	}, []);
 
 
