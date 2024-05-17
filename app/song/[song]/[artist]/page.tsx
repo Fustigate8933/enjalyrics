@@ -40,7 +40,6 @@ export default async function Lyrics(props: Props){
 	const artist: string = decodeURIComponent(params.artist)
 	const data = await getLyrics(song, artist)
 	const lyrics = data.lyrics
-	const highlights = data.highlights
 
 	return (
 		<div className="window-wrapper">

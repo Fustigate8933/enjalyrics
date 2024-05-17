@@ -1,11 +1,17 @@
 from lyricsgenius import Genius
+from dotenv import load_dotenv
+import os
 
 
 def get_lyrics(song, artist):
-    token = "lxn9V1IwgK2pDmWlNYHpdAFae9A33vpnOWcmAC9d6W2uWLJ7kduq-fjfhY-cKdn_"
+    load_dotenv("../.env")
+    token = os.getenv("GENIUS_TOKEN")
+    
 
     genius = Genius(token)
     song = genius.search_song(song, artist)
+
+    print(song)
 
     if song is None:
         return None

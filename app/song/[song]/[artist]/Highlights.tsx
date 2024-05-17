@@ -67,7 +67,7 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 		} catch (error) {
 			console.error("Error fetching highlights:", error);
 		}
-	};
+	}
 
 	const handleSubmitTranslation = async (text: string, translation: string) => {
 		try {
