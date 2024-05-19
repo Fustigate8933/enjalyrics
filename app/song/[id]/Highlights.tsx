@@ -167,7 +167,7 @@ const Highlights: React.FC<HighlightsProps> = ({ songName, artist, songId, lyric
 						return highlight ? (
 							<span
 								key={charIndex}
-								className={`text-green-300 ${charIndex} hover:cursor-pointer`}
+								className={`text-green-300 ${charIndex} hover:cursor-pointer ${charIndex === highlight.end ? 'mr-2' : ''} ${charIndex === highlight.start && charIndex !== 0 ? "ml-2" : ""}`}
 								onClick={() => {
 									setHighlighted({
 										id: highlight.id,
