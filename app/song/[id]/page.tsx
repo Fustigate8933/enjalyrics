@@ -1,4 +1,4 @@
-import Highlights from "./Highlights"
+import HighlightsComponent from "./Highlights"
 
 async function getLyrics(id: number){
 	const url = `http://localhost:8000/get-song/${id}`
@@ -11,7 +11,7 @@ async function getLyrics(id: number){
 
 		const data = await response.json()
 		
-		return data	
+		return data	// returns string of lyrics with lines separated by "\n"s
 	}catch (error){
 		console.log(error)
 		return null
@@ -29,9 +29,7 @@ export default async function Lyrics(props: Props){
 	const data = await getLyrics(params.id)
 
 	return (
-		<div className="window-wrapper">
-			<Highlights songName={data.song_name} artist={data.artist} songId={data.id} lyrics={data.lyrics} />
-		</div>
+			<HighlightsComponent songName={data.song_name} songArtist={data.artist} songId={data.id} songLyrics={data.lyrics} />
 	)
 }
 

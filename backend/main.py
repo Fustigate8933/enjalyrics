@@ -66,7 +66,7 @@ async def get_song_by_id(song_id: int):
         "song_name": song.song_name,
         "artist": song.artist,
         "id": song_id,
-        "lyrics": lyrics_to_list(song.lyrics)
+        "lyrics": song.lyrics
     }
 
 
@@ -100,7 +100,7 @@ async def add_song(params: AddSongDetails):
 
         response_content = {
             "message": "Song already exists in database", 
-            "lyrics": lyrics_to_list(existing_song.lyrics), 
+            "lyrics": existing_song.lyrics, 
             "id": existing_song.id,
             "highlights": highlights_by_line
         }
@@ -118,7 +118,7 @@ async def add_song(params: AddSongDetails):
 
     response_content = {
         "message": "Song added successfully", 
-        "lyrics": lyrics_to_list(lyrics), 
+        "lyrics": lyrics, 
         "id": new_song.id,
         "highlights": {}
     }

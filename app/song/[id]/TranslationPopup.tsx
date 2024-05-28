@@ -4,11 +4,13 @@ interface TranslationPopupProps {
 	text: string,
 	position: { x: number, y: number },
 	onTranslationChange: (translation: string) => void,
-	onSubmitTranslation: (text:string, translation: string) => void,
+	onSubmitTranslation: (translation: string) => void,
 	onDeleteTranslation: (id: number) => void,
 	id: number,
 	already_in: boolean,
-	jp: string
+	jp: string,
+	start: number,
+	end: number
 }
 
 const TranslationPopup: React.FC<TranslationPopupProps> = ({
@@ -19,17 +21,19 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 	onDeleteTranslation,
 	id,
 	already_in,
-	jp
+	jp,
+	start,
+	end
 }) => {
-	const [translation, setTranslation] = useState(text)
-	
+	const [inputTranslation, setTranslation] = useState(text)
+
 	const handleTranslationChange =	(e: React.ChangeEvent<HTMLInputElement>) => {
 		setTranslation(e.target.value)
 		onTranslationChange(e.target.value)
 	}
 
 	const handleSubmitTranslation = () => {
-		onSubmitTranslation(text, translation)
+		onSubmitTranslation(inputTranslation)
 	}
 
 	const handleDeleteTranslation = () => {
@@ -37,12 +41,37 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 	}
 
 	return (
+		<div className="fixed right-column flex flex-col gap-3 text-xl">
+			<h1>日本語: {jp || <span className="text-red-400">None detected</span>}</h1>
+			<h1>User Translation: {text || <span className="text-red-400">None detected</span>}</h1>
+			<h1>Start: {start}, end: {end}</h1>
+			<input 
+				type="text"
+				className="text-black p-1 rounded-md min-w-20 bg-gray-300"
+				value={inputTranslation}
+				onChange={handleTranslationChange}
+				placeholder={jp}
+				id="translation-input"
+			/>
+			{(text !== "") ? 
+			<button className="hover:cursor-pointer bg-green-300 text-black rounded-lg px-2" onClick={handleSubmitTranslation}>
+				Submit
+			</button>
+				: null
+			}
+			{already_in ? (
+				<button className="hover:cursor-pointer bg-red-400 text-black rounded-lg px-2" onClick={handleDeleteTranslation}>
+					Delete
+				</button>
+				) : null}
+
+			{/*
 		<div
 			className="bg-black border border-black border-solid p-2 rounded-lg" 
 			style={{
 				position: "absolute",
-        left: position.x,
-        top: position.y - 80 + (window.scrollY)
+				left: position.x,
+				top: position.y - 80 + (window.scrollY)
 			}}
 			id="translation-popup"
 			>
@@ -65,6 +94,8 @@ const TranslationPopup: React.FC<TranslationPopupProps> = ({
 					</button>
 				) : null}
 			</div>
+		</div>
+			*/}
 		</div>
 	)
 }

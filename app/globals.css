@@ -31,6 +31,19 @@ body {
 	.window-wrapper {
 		@apply flex min-h-screen flex-col p-24
 	}
+
+	.column-wrapper {
+		display: grid;
+		grid-template-columns: 60% 40%;
+	}
+	
+	.left-column {
+		grid-column: 1;
+	}
+
+	.right-column {
+		grid-column: 2;
+	}
 }
 
 @layer utilities {
