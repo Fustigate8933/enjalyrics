@@ -198,6 +198,21 @@ async def delete_highlight(highlight_id: int):
     return {"message": "Highlight deleted successfully"}
 
 
+#### Edit an existing highlight ####
+class EditHighlightDetails(BaseModel):
+    translation: str
+
+@app.put("/edit-highlight/{highlight_id}")
+async def edit_highlight(highlight_id: int, params: EditHighlightDetails):
+    highlight = session.query(Highlight).filter_by(id=highlight_id).first()
+    if not highlight:
+        raise HTTPException(status_code=404, detail=f"Highlight with id {highlight_id} not found.")
+
+    setattr(highlight, "translation", params.translation)
+    session.commit()
+
+    return {"message": "Highlight edited successfully"}
+
 
 
 
