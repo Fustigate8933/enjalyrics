@@ -85,24 +85,25 @@ async def add_song(params: AddSongDetails):
     existing_song = session.query(Song).filter_by(id=song_id).first()
     
     if existing_song:
-        highlights_by_line = defaultdict(list)
-        for highlight in existing_song.highlights:
-            highlights_by_line[highlight.line].append({
-                "song_id": highlight.song_id,
-                "highlighted_text": highlight.highlighted_text,
-                "x_pos": highlight.x_pos,
-                "start": highlight.start,
-                "id": highlight.id,
-                "translation": highlight.translation,
-                "y_pos": highlight.y_pos,
-                "end": highlight.end
-            })
+        # highlights_by_line = defaultdict(list)
+        # for highlight in existing_song.highlights:
+        #     highlights_by_line[highlight.line].append({
+        #         "song_id": highlight.song_id,
+        #         "highlighted_text": highlight.highlighted_text,
+        #         "x_pos": highlight.x_pos,
+        #         "start": highlight.start,
+        #         "id": highlight.id,
+        #         "translation": highlight.translation,
+        #         "y_pos": highlight.y_pos,
+        #         "end": highlight.end
+        #     })
+        highlights = [highlight for highlight in existing_song.highlights]
 
         response_content = {
             "message": "Song already exists in database", 
             "lyrics": existing_song.lyrics, 
             "id": existing_song.id,
-            "highlights": highlights_by_line
+            "highlights": highlights
         }
         return response_content
 
@@ -120,7 +121,7 @@ async def add_song(params: AddSongDetails):
         "message": "Song added successfully", 
         "lyrics": lyrics, 
         "id": new_song.id,
-        "highlights": {}
+        "highlights": []
     }
 
     return response_content
@@ -131,11 +132,10 @@ class HighlightDetails(BaseModel):
     song_id: int
     highlighted_text: str
     translation: str
-    x_pos: int
-    y_pos: int
-    start: int
-    end: int
-    line: int
+    start_index: int
+    end_index: int
+    start_line: int
+    end_line: int
 
 
 @app.post("/add-highlight/")
@@ -144,11 +144,10 @@ async def add_highlight(params: HighlightDetails):
         song_id=params.song_id,
         highlighted_text=params.highlighted_text,
         translation=params.translation,
-        x_pos=params.x_pos,
-        y_pos=params.y_pos,
-        start=params.start,
-        end=params.end,
-        line=params.line
+        start_index=params.start_index,
+        end_index=params.end_index,
+        start_line=params.start_line,
+        end_line=params.end_line
     )
 
     song = session.query(Song).get(params.song_id)
@@ -157,7 +156,7 @@ async def add_highlight(params: HighlightDetails):
     session.add(new_highlight)
     session.commit()
 
-    response_content = {"message": "Highlight added successfully"}
+    response_content = {"message": "Highlight added successfully", "highlight_id": new_highlight.id}
     return JSONResponse(status_code=201, content=response_content)
 
 
@@ -168,22 +167,24 @@ async def get_highlights(song_id: int):
     if not song:
         raise HTTPException(status_code=404, detail=f"Song with id {song_id} not found.")
 
-    highlights = song.highlights
-    highlights_by_line = defaultdict(list)
-    for highlight in highlights:
-        highlights_by_line[highlight.line].append({
-            "song_id": highlight.song_id,
-            "highlighted_text": highlight.highlighted_text,
-            "x_pos": highlight.x_pos,
-            "start": highlight.start,
-            "id": highlight.id,
-            "translation": highlight.translation,
-            "y_pos": highlight.y_pos,
-            "end": highlight.end
-        })
+    # highlights = song.highlights
+    # highlights_by_line = defaultdict(list)
+    # for highlight in highlights:
+    #     highlights_by_line[highlight.line].append({
+    #         "song_id": highlight.song_id,
+    #         "highlighted_text": highlight.highlighted_text,
+    #         "x_pos": highlight.x_pos,
+    #         "start": highlight.start,
+    #         "id": highlight.id,
+    #         "translation": highlight.translation,
+    #         "y_pos": highlight.y_pos,
+    #         "end": highlight.end
+    #     })
+
+    highlights = [highlight for highlight in song.highlights]
 
 
-    return {"song_id": song_id, "highlights": highlights_by_line}
+    return {"song_id": song_id, "highlights": highlights}
 
 
 #### Delete a highlight of a song from database ####

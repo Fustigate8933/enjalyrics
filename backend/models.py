@@ -22,11 +22,10 @@ class Highlight(Base):
     song_id = Column(Integer, ForeignKey('songs.id'))
     highlighted_text = Column(String)
     translation = Column(String)
-    x_pos = Column(Integer)
-    y_pos = Column(Integer)
-    start = Column(Integer)
-    end = Column(Integer)
-    line = Column(Integer)
+    start_index = Column(Integer)
+    end_index = Column(Integer)
+    start_line = Column(Integer)
+    end_line = Column(Integer)
 
     song = relationship("Song", back_populates="highlights")
 
