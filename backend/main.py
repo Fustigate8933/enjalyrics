@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from models import *
 from fastapi.responses import JSONResponse
-from collections import defaultdict
+from dotenv import load_dotenv
+import os
 
 
 print("\n", "-" * 20)
@@ -26,7 +27,10 @@ from sqlalchemy.engine.reflection import Inspector
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = db.create_engine("sqlite+pysqlite:///./enja.db")
+# engine = db.create_engine("sqlite+pysqlite:///./enja.db")
+load_dotenv()
+db_pass = os.getenv("DATABASE_PASSWORD")
+engine = db.create_engine(f"postgresql+psycopg2://postgres.axbrinbwdfzotjdqheek:{db_pass}@aws-0-us-east-1.pooler.supabase.com:6543/postgres")
 connection = engine.connect()
 inspector = Inspector.from_engine(engine)
 Base.metadata.create_all(bind=engine)
