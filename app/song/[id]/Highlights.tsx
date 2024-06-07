@@ -93,12 +93,11 @@ const HighlightsComponent: React.FC<HighlightsProps> = ({ songName, songArtist, 
 				for (var i = 0; i < children.length; i++){
 					const child = children[i]
 					if (child.nodeType === Node.ELEMENT_NODE) {
-						const element = child as Element; // Type assertion
+						const element = child as Element // Type assertion
 						if (!stop_changing_start_line) {
-							start_line += element.querySelectorAll("br").length + (element.nodeName === "BR" ? 1 : 0)
+							start_line += element.querySelectorAll("br").length + (element.nodeName === "BR" ? 1 : 0);
 						}
-						end_line += element.querySelectorAll("br").length + (element.nodeName === "BR" ? 1 : 0)
-					}
+						end_line += element.querySelectorAll("br").length + (element.nodeName === "BR" ? 1 : 0);}
 					if (child.isSameNode(anchor)){
 						stop_changing_start_line = true
 					}
@@ -215,21 +214,40 @@ const HighlightsComponent: React.FC<HighlightsProps> = ({ songName, songArtist, 
 	}
 
 	function getTextNodeByLine(line: number) {
-		const children = document.getElementById("lyrics")?.childNodes
-		let currentLine = 0;
+    const children = document.getElementById("lyrics")?.childNodes;
+    let currentLine = 0;
 
-		if (children){
-			for (var i = 0; i < children.length; i++){
-				const child = children[i]
-				if (currentLine === line){
-					return child
+    if (children) {
+			for (let i = 0; i < children.length; i++) {
+				const child = children[i];
+				if (currentLine === line) {
+						return child;
 				}
 				if (child.nodeType === Node.ELEMENT_NODE) {
-					currentLine += child.querySelectorAll("br").length + (child.nodeName === "BR")
+						const elementChild = child as Element;  // Type assertion
+						currentLine += elementChild.querySelectorAll("br").length + (elementChild.nodeName === "BR" ? 1 : 0);
 				}
 			}
 		}
 	}
+ 
+
+	// function getTextNodeByLine(line: number) {
+	// 	const children = document.getElementById("lyrics")?.childNodes
+	// 	let currentLine = 0;
+	//
+	// 	if (children){
+	// 		for (var i = 0; i < children.length; i++){
+	// 			const child = children[i]
+	// 			if (currentLine === line){
+	// 				return child
+	// 			}
+	// 			if (child.nodeType === Node.ELEMENT_NODE) {
+	// 				currentLine += (child).querySelectorAll("br").length + (child.nodeName === "BR")
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	
 	const highlightFetchedText = () => {
