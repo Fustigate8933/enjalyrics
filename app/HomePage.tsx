@@ -3,6 +3,7 @@ import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Spinner from "./Spinner"
+import config from "../config"
 
 interface songDetails {
 	artist: string,
@@ -23,6 +24,9 @@ const HomePage: React.FC<HomePageProps> = ({
 	const [songArtist, setSongArtist] = useState("")
 	const [isLoading, setIsLoading] = useState(false)
 
+	const apiUrl = config.apiUrl
+
+
 	const router = useRouter()
 
 	const handleSongNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +43,7 @@ const HomePage: React.FC<HomePageProps> = ({
 		setIsLoading(true)
 		
 		try {
-			const response = await fetch("http://localhost:8000/add-song/", {
+			const response = await fetch(`${apiUrl}/add-song/`, {
 				method: "POST",
 				headers: {"Content-Type": "application/json"},
 				body: JSON.stringify({

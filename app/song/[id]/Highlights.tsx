@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react"
 import { Input } from "@nextui-org/input"
 import Spinner from "../../Spinner"
+import config from "../../../config"
 
 interface HighlightsProps {
 	songName: string,
@@ -23,12 +24,14 @@ interface Highlight {
 }
 
 const HighlightsComponent: React.FC<HighlightsProps> = ({ songName, songArtist, songId, songLyrics }) => {
-	// states go here //
+	// states and other constants go here //
 	const [songHighlights, setSongHighlights] = useState<Highlight[]>([])
 	const [translationInput, setTranslationInput] = useState("")
 	const [isLoading, setIsLoading] = useState(false)
 	const [currentSelection, setCurrentSelection] = useState("Add or select a highlight")
 	const [curId, setCurId] = useState(-1)
+
+	const apiUrl = config.apiUrl
 
 
 	// refs go here //
@@ -120,7 +123,7 @@ const HighlightsComponent: React.FC<HighlightsProps> = ({ songName, songArtist, 
 
 			var newId = -1
 
-			fetch("http://127.0.0.1:8000/add-highlight/", {
+			fetch(`${apiUrl}/add-highlight/`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
@@ -190,7 +193,7 @@ const HighlightsComponent: React.FC<HighlightsProps> = ({ songName, songArtist, 
 			range.insertNode(span)
 			selection.removeAllRanges()
 		} else if (curId !== -1){
-			const response = await fetch(`http://localhost:8000/edit-highlight/${curId}`, {
+			const response = await fetch(`${apiUrl}/edit-highlight/${curId}`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json'
@@ -284,7 +287,7 @@ const HighlightsComponent: React.FC<HighlightsProps> = ({ songName, songArtist, 
 
 	const getSongHighlights = async () => {
 		try {
-			const response = await fetch(`http://localhost:8000/get-highlights/${songId}`)
+			const response = await fetch(`${apiUrl}/get-highlights/${songId}`)
 			const data = await response.json()
 			console.log(data)
 			setSongHighlights(data.highlights)

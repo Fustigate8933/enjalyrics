@@ -1,7 +1,9 @@
 import HighlightsComponent from "./Highlights"
+import config from "../../../config"
 
 async function getLyrics(id: number){
-	const url = `http://localhost:8000/get-song/${id}`
+	const apiUrl = config.apiUrl
+	const url = `${apiUrl}/get-song/${id}`
 	try {
 		const response = await fetch(url)
 

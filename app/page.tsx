@@ -1,8 +1,12 @@
 import HomePage from "./HomePage"
+import config from "../config"
+
 
 async function fetchSongs () {
+	const apiUrl = config.apiUrl
+
 	try {
-			const response = await fetch("http://localhost:8000/get-all-songs")
+			const response = await fetch(`${apiUrl}/get-all-songs`)
 			const data = await response.json()
 			return data
 		} catch (error) {
