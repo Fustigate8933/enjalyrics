@@ -93,10 +93,11 @@ const HighlightsComponent: React.FC<HighlightsProps> = ({ songName, songArtist, 
 				for (var i = 0; i < children.length; i++){
 					const child = children[i]
 					if (child.nodeType === Node.ELEMENT_NODE) {
-						if (!stop_changing_start_line){
-							start_line += child.querySelectorAll("br").length + (child.nodeName === "BR")
+						const element = child as Element; // Type assertion
+						if (!stop_changing_start_line) {
+							start_line += element.querySelectorAll("br").length + (element.nodeName === "BR" ? 1 : 0)
 						}
-						end_line += child.querySelectorAll("br").length + (child.nodeName === "BR")
+						end_line += element.querySelectorAll("br").length + (element.nodeName === "BR" ? 1 : 0)
 					}
 					if (child.isSameNode(anchor)){
 						stop_changing_start_line = true
